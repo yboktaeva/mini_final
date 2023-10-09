@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 15:08:13 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/06 20:42:52 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 18:00:24 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ int	exec_cmd(t_parse_list *parse_list, t_cmd_info *cmd_info, t_table *main)
 	status = 0;
 	reset_cmd_info(cmd_info);
 	status = handle_redirections(parse_list, main->here_doc,
-			&(main->cmd_info)->in, &(main->cmd_info)->out, (main->cmd_info)->fd);
+			&(main->cmd_info)->in, &(main->cmd_info)->out);
 	if (status)
 	{
 		status = execute_command(parse_list, main->cmd_info->executable_path,
@@ -105,14 +105,14 @@ static int	execute_parent(t_cmd_info *cmd_info, pid_t pid, int *fdc)
 	close_fd_cmd(cmd_info);
 	if (cmd_info->index_cmd == cmd_info->nb_cmds)
 	{
+		status = wait_all_pid(cmd_info, pid);
 		ft_close(fdc[0]);
 		ft_close(fdc[1]);
-		status = wait_all_pid(cmd_info, pid);
 	}
 	else
 	{
 		cmd_info->fd[0] = dup(fdc[0]);
-		//cmd_info->fd[1] = dup(fdc[1]);
+		cmd_info->fd[1] = dup(fdc[1]);
 		ft_close(fdc[0]);
 		ft_close(fdc[1]);
 	}
@@ -123,6 +123,7 @@ void	execute_child(t_table *main, t_cmd_info *cmd_info, int *fdc,
 		const char *path)
 {
 	dup_and_close(main->parse_list, cmd_info, fdc);
+	free_fake_envp(main);
 	main->arg->envp = duplicate_envp(main->env);
 	execve(path, main->arg->argv, main->arg->envp);
 	if (errno == EACCES)
@@ -131,9 +132,8 @@ void	execute_child(t_table *main, t_cmd_info *cmd_info, int *fdc,
 		perror(main->arg->argv[0]);
 		free_execution(main);
 		free_env(&main->env);
-		free_fake_envp(main);
 		free(main->cmd_info->executable_path);
-		free_n_close_heredoc(&main->here_doc, main->cmd_info->fd[0]);
+		free_n_close_heredoc(&main->here_doc, 0);
 		ft_close(main->cmd_info->fd[0]);
 		ft_close(main->cmd_info->fd[1]);
 		exit(126);

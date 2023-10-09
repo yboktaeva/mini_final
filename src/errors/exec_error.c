@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 18:59:21 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/05 11:05:51 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 15:45:44 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ int	exec_fail(t_table *main, char *str)
 	g_status = 127;
 	free_execution(main);
 	free_env(&main->env);
-	free_fake_envp(main);
 	free(main->cmd_info->executable_path);
 	free_n_close_heredoc(&main->here_doc, main->cmd_info->fd[0]);
 	ft_close(main->cmd_info->fd[0]);

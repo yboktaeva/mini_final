@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 00:06:08 by yuliaboktae       #+#    #+#             */
-/*   Updated: 2023/10/06 17:20:27 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 19:17:29 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,18 +33,17 @@ void	cmd_execution(t_parse_list *parse_list, t_table *main)
 	open_heredoc(main, parse_list, &cmd_info);
 	if (!parse_list->one_cmd && (parse_list->input || parse_list->output))
 		if_only_redir(parse_list, main, tmp_fd);
-	if (cmd_info.nb_cmds == 1) //
+	if (cmd_info.nb_cmds == 1)
 	{
 		if (is_builtin(parse_list->one_cmd))
 			one_builtin(parse_list, main, &cmd_info);
 		else
 			one_cmd_exec(parse_list, main, &cmd_info);
 	}
-	else //
+	else
 		multi_cmds_exec(parse_list, main, &cmd_info);
-	free_n_close_heredoc(&main->here_doc, 0);
-	free(main->here_doc);
-	main->here_doc = NULL;
+	// if (parse_list->input && main->here_doc != NULL)
+	// 	free_n_close_heredoc(&main->here_doc, 0);
 	return ;
 }
 

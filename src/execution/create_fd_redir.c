@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 10:34:17 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/06 19:00:24 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 17:57:30 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,23 +16,23 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static int	open_input(t_redir *input, t_here_doc *here_doc, int *fd_in, int heredoc_pipe);
+static int	open_input(t_redir *input, t_here_doc *here_doc, int *fd_in);
 static int	open_output(t_redir *out, int *fd_out);
 
 int	handle_redirections(t_parse_list *parse_list, t_here_doc *here_doc,
-		int *fd_in, int *fd_out, int *heredoc_pipe)
+		int *fd_in, int *fd_out)
 {
 	int	status;
 
 	status = 1;
 	if (parse_list->input != NULL)
-		status = open_input(parse_list->input, here_doc, fd_in, heredoc_pipe[0]);
+		status = open_input(parse_list->input, here_doc, fd_in);
 	if (parse_list->output != NULL)
 		status = open_output(parse_list->output, fd_out);
 	return (status);
 }
 
-static int	open_input(t_redir *input, t_here_doc *here_doc, int *fd_in, int heredoc_pipe)
+static int	open_input(t_redir *input, t_here_doc *here_doc, int *fd_in)
 {
 	check_fd_in(input, fd_in);
 	while (input)
@@ -48,8 +48,7 @@ static int	open_input(t_redir *input, t_here_doc *here_doc, int *fd_in, int here
 		}
 		else if (input->type == HEREDOC)
 		{
-			*fd_in = dup(heredoc_pipe);
-			ft_close(heredoc_pipe);
+			*fd_in = here_doc->read_fd;
 			here_doc = here_doc->next;
 			if (*fd_in == -1)
 			{

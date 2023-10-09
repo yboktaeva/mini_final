@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/08 18:14:16 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/06 18:45:38 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 18:46:28 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 void		create_args(t_parse_list *parse_list, t_arg *arg);
 int			handle_redirections(t_parse_list *parse_list, t_here_doc *here_doc,
-				int *fd_in, int *fd_out, int *heredoc_pipe);
+				int *fd_in, int *fd_out);
 void		cmd_execution(t_parse_list *parse_list, t_table *main);
 void		one_builtin(t_parse_list *parse_list, t_table *main,
 				t_cmd_info *cmd_info);		
@@ -31,7 +31,7 @@ char		*get_path_from_envp(t_env *env);
 void		open_heredoc(t_table *main, t_parse_list *parse_list,
 				t_cmd_info *cmd_info);
 void		add_back_heredoc(t_here_doc *here_doc, int fd);
-void		free_n_close_heredoc(t_here_doc **head, int fd);
+t_here_doc	*free_n_close_heredoc(t_here_doc **head, int fd);
 int			multi_cmds_exec(t_parse_list *parse_list, t_table *main,
 				t_cmd_info *cmd_info);
 void		ft_close(int fd);

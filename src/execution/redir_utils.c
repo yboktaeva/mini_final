@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 15:48:16 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/06 18:57:19 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 17:59:38 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ int	handle_io_redir(t_parse_list *s, t_table *main, t_cmd_info *cmd_info)
 	if (s->input || s->output)
 	{
 		flag_redir = handle_redirections(s, main->here_doc, &cmd_info->in,
-				&cmd_info->out, cmd_info->fd);
+				&cmd_info->out);
 		if (flag_redir)
 		{
 			if (cmd_info->in != STDIN_FILENO)
@@ -70,7 +70,7 @@ void	if_only_redir(t_parse_list *parse_list, t_table *main, int *tmp_fd)
 	tmp_fd[1] = dup(STDOUT_FILENO);
 	tmp_fd[0] = dup(STDIN_FILENO);
 	handle_redirections(parse_list, main->here_doc, &main->cmd_info->in,
-		&main->cmd_info->out, main->cmd_info->fd);
+		&main->cmd_info->out);
 	ft_close(main->cmd_info->in);
 	ft_close(main->cmd_info->out);
 	dup2(tmp_fd[1], STDOUT_FILENO);
@@ -78,3 +78,4 @@ void	if_only_redir(t_parse_list *parse_list, t_table *main, int *tmp_fd)
 	ft_close(tmp_fd[1]);
 	ft_close(tmp_fd[0]);
 }
+

@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/04 20:59:30 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/06 20:16:17 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 17:59:05 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,15 @@
 
 void	close_cmd_fd(t_cmd_info *cmd_info, int *fdc)
 {
-	ft_close(cmd_info->fd[0]);
-	ft_close(cmd_info->fd[1]);
 	ft_close(fdc[0]);
 	ft_close(fdc[1]);
+	ft_close(cmd_info->fd[0]);
+	ft_close(cmd_info->fd[1]);
 }
 
 void	dup_and_close(t_parse_list *s, t_cmd_info *cmd_info, int *fdc)
 {
+	(void)s;
 	if (cmd_info->in != STDIN_FILENO)
 	{
 		dup2(cmd_info->in, STDIN_FILENO);
@@ -66,11 +67,10 @@ void	ft_child(t_parse_list *parse_list, const char *path, t_table *main,
 	if (is_builtin(parse_list->one_cmd))
 	{
 		dup_and_close(parse_list, main->cmd_info, fdc);
-		//free_env(&main->env);
 		free(main->cmd_info->executable_path);
 		free_token(main->tokens);
 		free_fake_envp(main);
-		free_n_close_heredoc(&main->here_doc, main->cmd_info->fd[0]);
+		free_n_close_heredoc(&main->here_doc, 0);
 		builtin_exec(parse_list->one_cmd, main->env, MULTI_CMD, main);
 	}
 	else

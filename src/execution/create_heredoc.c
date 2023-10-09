@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/13 12:30:10 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/06 20:49:03 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 19:04:31 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <signal.h>
 
 static t_here_doc	*run_heredoc(t_table *main, t_redir *input,
 					t_cmd_info *cmd_info);
 static int			write_heredoc(t_table *main, int *tmp_fd, char *sep);
-static void			free_and_close(t_table *main, int *tmp_fd);
+
+
+static int	get_exit_status(int status)
+{
+	int	return_code;
+	int	signal;
+
+	return_code = 0;
+	signal = 0;
+	if (WIFEXITED(status))
+		return_code = WEXITSTATUS(status);
+	else
+	{
+		return_code = 128;
+		if (WIFSIGNALED(status))
+			signal = WTERMSIG(status);
+		else
+		{
+			if (WIFSTOPPED(status))
+				signal = SIGSTOP;
+			if (WIFCONTINUED(status))
+				signal = SIGCONT;
+		}			
+	}
+	return (g_status = return_code + signal);
+}
+
 
 void	open_heredoc(t_table *main, t_parse_list *parse_list,
 		t_cmd_info *cmd_info)
@@ -44,11 +71,9 @@ void	open_heredoc(t_table *main, t_parse_list *parse_list,
 		{
 			if (!run_heredoc(main, curr, cmd_info))
 			{
-				free_n_close_heredoc(&main->here_doc, 0);
-				return (free(main->here_doc));
+				return ;
 			}
 		}
-		handle_sig(SIG_DEFAULT);
 		parse_list = parse_list->next;
 	}
 }
@@ -56,31 +81,35 @@ void	open_heredoc(t_table *main, t_parse_list *parse_list,
 static t_here_doc	*run_heredoc(t_table *main, t_redir *input,
 			t_cmd_info *cmd_info)
 {
+	int		fd[2];
 	pid_t	pid_heredoc;
 	int		status;
 
+	(void)cmd_info;
 	while (input != NULL)
 	{
 		if (input->type == HEREDOC)
 		{
-			if (pipe(cmd_info->fd) == -1)
-				free_and_close(main, cmd_info->fd);
+			if (pipe(fd) == -1)
+				free_n_close_heredoc(&main->here_doc, fd[0]);
 			pid_heredoc = fork();
 			if (pid_heredoc == 0)
 			{
-				handle_sig(SIG_HEREDOC);
-				ft_close(cmd_info->fd[0]);
-				write_heredoc(main, cmd_info->fd, input->file_name);
-				ft_close(cmd_info->fd[1]);
+				ft_close(fd[0]);
+				write_heredoc(main, fd, input->file_name);
+				ft_close(fd[1]);
 			}
-			else if (pid_heredoc > 0)
+			else
 			{
-				waitpid(pid_heredoc, &status, 0);
-				ft_close(cmd_info->fd[1]);
-				add_back_heredoc(main->here_doc, cmd_info->in);
-				cmd_info->in = dup(cmd_info->fd[0]);
-				ft_close(main->cmd_info->in);
-				handle_sig(SIG_DEFAULT);
+				ft_close(fd[1]);
+				wait(&status);
+				if (get_exit_status(status) == 1)
+					return (free_n_close_heredoc(&main->here_doc, fd[0]));
+				else
+					add_back_heredoc(main->here_doc, fd[0]);
+				// cmd_info->in = dup(fd[0]);
+				// ft_close(main->cmd_info->in);
+				// handle_sig(SIG_DEFAULT);
 			}
 		}
 		input = input->next;
@@ -91,37 +120,27 @@ static t_here_doc	*run_heredoc(t_table *main, t_redir *input,
 static int	write_heredoc(t_table *main, int *tmp_fd, char *sep)
 {
 	char	*input;
-
-	//handle_sig(SIG_HEREDOC);
+	(void)main;
+	handle_sig(SIG_HEREDOC);
 	while (1)
 	{
-		g_status = 0;
 		input = readline(">");
-		if (!input)
-			break ;
-		else
+		if (input)
 		{
 			if (ft_strncmp(sep, input, ft_strlen(sep)))
 			{
 				write(tmp_fd[1], input, ft_strlen(input));
 				write(tmp_fd[1], "\n", 1);
+				free(input);
 			}
 			else
 			{
-				free(input);
 				break ;
 			}
 		}
 	}
-	free_and_close(main, tmp_fd);
-	exit(0);
-}
-
-static void	free_and_close(t_table *main, int *tmp_fd)
-{
+	free(input);
 	ft_close(tmp_fd[0]);
 	ft_close(tmp_fd[1]);
-	free_env(&main->env);
-	free_execution(main);
-	free_n_close_heredoc(&main->here_doc, 0);
+	exit (0);
 }

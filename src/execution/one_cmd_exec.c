@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/02 11:57:21 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/06 20:00:16 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 17:58:03 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ static int	one_cmd(const char *path, t_parse_list *parse_list, t_table *main,
 		handle_sig(SIG_CHILD);
 		create_args(parse_list, main->arg);
 		handle_redirections(parse_list, main->here_doc, &cmd_info->in,
-			&cmd_info->out, cmd_info->fd);
+			&cmd_info->out);
 		exec_comd(main, path, main->arg, cmd_info);
 	}
 	else

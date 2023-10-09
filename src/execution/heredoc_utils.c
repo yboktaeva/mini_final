@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 16:35:48 by yuliaboktae       #+#    #+#             */
-/*   Updated: 2023/10/02 17:25:22 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 18:35:21 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ static t_here_doc	*new_node(int fd)
 	return (new);
 }
 
-void	free_n_close_heredoc(t_here_doc **head, int fd)
+t_here_doc	*free_n_close_heredoc(t_here_doc **head, int fd)
 {
 	t_here_doc	*curr;
 	t_here_doc	*stock;
@@ -54,5 +54,5 @@ void	free_n_close_heredoc(t_here_doc **head, int fd)
 		free(curr);
 		curr = stock;
 	}
-	*head = NULL;
+	return (NULL);
 }

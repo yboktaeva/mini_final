@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/13 17:07:01 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/06 20:40:26 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/09 19:11:46 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,9 @@ void	sig_here_doc(int sig)
 {
 	if (sig == SIGINT)
 	{
-		g_status = 130;
+		//g_status = 130;
 		ft_putstr_fd("\n", STDERR_FILENO);
-		close(0);
+		exit (1);
 	}
 }
 
@@ -57,7 +57,7 @@ void	handle_sig(int state)
 	}
 	else if (state == SIG_HEREDOC)
 	{
-		signal(SIGINT, &sig_here_doc);
+		signal(SIGINT, sig_here_doc);
 		signal(SIGQUIT, SIG_IGN);
 	}
 	else if (state == SIG_CHILD)
