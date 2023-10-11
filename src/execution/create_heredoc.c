@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/13 12:30:10 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/09 19:04:31 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/10 15:21:06 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,39 +20,12 @@
 #include <sys/types.h>
 #include <signal.h>
 
-static t_here_doc	*run_heredoc(t_table *main, t_redir *input,
-					t_cmd_info *cmd_info);
+static t_here_doc	*run_heredoc(t_table *main, t_redir *input);
+static void			parent_heredoc(t_here_doc *here_doc, int *status, int *fd);
 static int			write_heredoc(t_table *main, int *tmp_fd, char *sep);
+static void			free_and_close(t_table *main, int *tmp_fd);
 
-
-static int	get_exit_status(int status)
-{
-	int	return_code;
-	int	signal;
-
-	return_code = 0;
-	signal = 0;
-	if (WIFEXITED(status))
-		return_code = WEXITSTATUS(status);
-	else
-	{
-		return_code = 128;
-		if (WIFSIGNALED(status))
-			signal = WTERMSIG(status);
-		else
-		{
-			if (WIFSTOPPED(status))
-				signal = SIGSTOP;
-			if (WIFCONTINUED(status))
-				signal = SIGCONT;
-		}			
-	}
-	return (g_status = return_code + signal);
-}
-
-
-void	open_heredoc(t_table *main, t_parse_list *parse_list,
-		t_cmd_info *cmd_info)
+void	open_heredoc(t_table *main, t_parse_list *parse_list)
 {
 	t_redir	*curr;
 
@@ -62,36 +35,37 @@ void	open_heredoc(t_table *main, t_parse_list *parse_list,
 		perror("Malloc failure in open heredoc");
 		return ;
 	}
-	main->here_doc->read_fd = 0;
+	main->here_doc->read_fd = STDIN_FILENO;
 	main->here_doc->next = NULL;
+	handle_sig(SIG_DEFAULT);
 	while (parse_list)
 	{
 		curr = parse_list->input;
 		if (curr != NULL)
 		{
-			if (!run_heredoc(main, curr, cmd_info))
+			if (!run_heredoc(main, curr))
 			{
-				return ;
+				free_n_close_heredoc(&main->here_doc, main->here_doc->read_fd);
+				return (free(main->here_doc));
 			}
 		}
 		parse_list = parse_list->next;
 	}
+	handle_sig(SIG_DEFAULT);
 }
 
-static t_here_doc	*run_heredoc(t_table *main, t_redir *input,
-			t_cmd_info *cmd_info)
+static t_here_doc	*run_heredoc(t_table *main, t_redir *input)
 {
-	int		fd[2];
 	pid_t	pid_heredoc;
 	int		status;
+	int		fd[2];
 
-	(void)cmd_info;
 	while (input != NULL)
 	{
 		if (input->type == HEREDOC)
 		{
 			if (pipe(fd) == -1)
-				free_n_close_heredoc(&main->here_doc, fd[0]);
+				free_and_close(main, fd);
 			pid_heredoc = fork();
 			if (pid_heredoc == 0)
 			{
@@ -100,47 +74,57 @@ static t_here_doc	*run_heredoc(t_table *main, t_redir *input,
 				ft_close(fd[1]);
 			}
 			else
-			{
-				ft_close(fd[1]);
-				wait(&status);
-				if (get_exit_status(status) == 1)
-					return (free_n_close_heredoc(&main->here_doc, fd[0]));
-				else
-					add_back_heredoc(main->here_doc, fd[0]);
-				// cmd_info->in = dup(fd[0]);
-				// ft_close(main->cmd_info->in);
-				// handle_sig(SIG_DEFAULT);
-			}
+				parent_heredoc(main->here_doc, &status, fd);
 		}
 		input = input->next;
 	}
 	return (main->here_doc);
 }
 
+static void	parent_heredoc(t_here_doc *here_doc, int *status, int *fd)
+{
+	wait(status);
+	ft_close(fd[1]);
+	add_back_heredoc(here_doc, here_doc->read_fd);
+	here_doc->read_fd = dup(fd[0]);
+	ft_close(fd[0]);
+	handle_sig(SIG_DEFAULT);
+}
+
 static int	write_heredoc(t_table *main, int *tmp_fd, char *sep)
 {
 	char	*input;
-	(void)main;
+
 	handle_sig(SIG_HEREDOC);
 	while (1)
 	{
+		g_status = 0;
 		input = readline(">");
-		if (input)
+		if (!input)
+			break ;
+		else
 		{
 			if (ft_strncmp(sep, input, ft_strlen(sep)))
 			{
 				write(tmp_fd[1], input, ft_strlen(input));
 				write(tmp_fd[1], "\n", 1);
-				free(input);
 			}
 			else
 			{
+				free(input);
 				break ;
 			}
 		}
 	}
-	free(input);
+	free_and_close(main, tmp_fd);
+	exit(0);
+}
+
+static void	free_and_close(t_table *main, int *tmp_fd)
+{
 	ft_close(tmp_fd[0]);
 	ft_close(tmp_fd[1]);
-	exit (0);
+	free_env(&main->env);
+	free_execution(main);
+	free_n_close_heredoc(&main->here_doc, main->here_doc->read_fd);
 }

@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 15:48:16 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/09 17:59:38 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:15:53 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,4 +78,3 @@ void	if_only_redir(t_parse_list *parse_list, t_table *main, int *tmp_fd)
 	ft_close(tmp_fd[1]);
 	ft_close(tmp_fd[0]);
 }
-

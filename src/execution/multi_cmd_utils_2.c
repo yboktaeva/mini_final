@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/04 20:59:30 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/09 17:59:05 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:19:33 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,6 @@ void	close_cmd_fd(t_cmd_info *cmd_info, int *fdc)
 
 void	dup_and_close(t_parse_list *s, t_cmd_info *cmd_info, int *fdc)
 {
-	(void)s;
 	if (cmd_info->in != STDIN_FILENO)
 	{
 		dup2(cmd_info->in, STDIN_FILENO);

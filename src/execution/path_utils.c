@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 10:59:35 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/09 17:46:50 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/10 15:37:45 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,8 +76,6 @@ int	if_exec_path(t_parse_list *s, t_table *main, t_cmd_info *cmd_info)
 		cmd_info->executable_path = get_executable_path(s->one_cmd->str,
 				cmd_info->path);
 	}
-	if (cmd_info->executable_path == NULL)
-		cmd_info->executable_path = ft_strdup(s->one_cmd->str);
 	if (cmd_info->executable_path == NULL)
 	{
 		close_fd_cmd(cmd_info);

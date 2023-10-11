@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 18:07:41 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/05 12:59:03 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:25:25 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,14 +56,14 @@ int	cmd_exit(t_one_cmd *one_cmd, t_table *main)
 
 static void	single_exit(t_table *main)
 {
-	ft_putendl_fd("exit", 1);
+	ft_putendl_fd("exit", STDOUT_FILENO);
 	safe_exit(main);
 	exit(g_status);
 }
 
 static void	exit_digit(t_one_cmd *one_cmd, t_table *main)
 {
-	ft_putendl_fd("exit", 1);
+	ft_putendl_fd("exit", STDOUT_FILENO);
 	g_status = ft_atoi(one_cmd->next->str);
 	safe_exit(main);
 	exit(g_status);

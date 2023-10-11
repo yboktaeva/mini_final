@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/02 11:57:21 by asekmani          #+#    #+#             */
-/*   Updated: 2023/10/09 17:58:03 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:19:06 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,8 +48,8 @@ int	one_cmd_exec(t_parse_list *s, t_table *main, t_cmd_info *cmd_info)
 	return (g_status);
 }
 
-static int	one_cmd(const char *path, t_parse_list *parse_list, t_table *main,
-		t_cmd_info *cmd_info)
+static int	one_cmd(const char *path, t_parse_list *s, t_table *main,
+				t_cmd_info *cmd_info)
 {
 	pid_t	pid;
 	int		status;
@@ -59,16 +59,14 @@ static int	one_cmd(const char *path, t_parse_list *parse_list, t_table *main,
 	pid = fork();
 	if (pid == -1)
 	{
-		perror("Fork failed");
 		safe_exit(main);
 		return (EXIT_FAILURE);
 	}
 	else if (pid == 0)
 	{
 		handle_sig(SIG_CHILD);
-		create_args(parse_list, main->arg);
-		handle_redirections(parse_list, main->here_doc, &cmd_info->in,
-			&cmd_info->out);
+		create_args(s, main->arg);
+		handle_redirections(s, main->here_doc, &cmd_info->in, &cmd_info->out);
 		exec_comd(main, path, main->arg, cmd_info);
 	}
 	else
@@ -110,7 +108,7 @@ static void	exec_comd(t_table *main, const char *path, t_arg *arg,
 	}
 	free_fake_envp(main);
 	arg->envp = duplicate_envp(main->env);
-	if (ft_strcmp(*arg->argv, "") == 0 || ft_strcmp(*arg->argv, "..") == 0) 
+	if (ft_strcmp(*arg->argv, "") == 0 || ft_strcmp(*arg->argv, "..") == 0)
 		exec_fail(main, *arg->argv);
 	execve(path, arg->argv, arg->envp);
 	execve_slash_error(arg, main);
@@ -125,7 +123,7 @@ static void	execve_slash_error(t_arg *arg, t_table *main)
 		free_execution(main);
 		free_env(&main->env);
 		free(main->cmd_info->executable_path);
-		free_n_close_heredoc(&main->here_doc, main->cmd_info->fd[0]);
+		free_n_close_heredoc(&main->here_doc, main->here_doc->read_fd);
 		ft_close(main->cmd_info->fd[0]);
 		ft_close(main->cmd_info->fd[1]);
 		exit(126);

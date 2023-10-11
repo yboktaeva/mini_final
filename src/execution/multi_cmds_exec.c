@@ -6,7 +6,7 @@
 /*   By: yuboktae <yuboktae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 15:08:13 by yuboktae          #+#    #+#             */
-/*   Updated: 2023/10/09 18:00:24 by yuboktae         ###   ########.fr       */
+/*   Updated: 2023/10/10 15:34:38 by yuboktae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,20 +75,17 @@ static int	execute_command(t_parse_list *parse_list, const char *path,
 	res = pipe(fdc);
 	if (res == -1)
 	{
-		perror("Pipe failed");
 		safe_exit(main);
 		return (EXIT_FAILURE);
 	}
 	pid = fork();
 	if (pid == -1)
 	{
-		perror("Fork failed");
 		safe_exit(main);
 		return (EXIT_FAILURE);
 	}
 	else if (pid == 0)
 	{
-		status = 0;
 		handle_sig(SIG_CHILD);
 		ft_child(parse_list, path, main, fdc);
 	}
@@ -100,7 +97,7 @@ static int	execute_parent(t_cmd_info *cmd_info, pid_t pid, int *fdc)
 {
 	int	status;
 
-	status = 1;
+	status = 0;
 	handle_sig(SIG_PARENT);
 	close_fd_cmd(cmd_info);
 	if (cmd_info->index_cmd == cmd_info->nb_cmds)
